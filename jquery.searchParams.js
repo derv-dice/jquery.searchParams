@@ -39,11 +39,61 @@
             rowsCount: function () {
                 return _private.var.rowsCount
             },
-            jsonMarshal: function () {
-                // TODO: возвращает JSON строку со всеми параметрами фильтров. Строка пригодна сразу к отправке на бэк
+            exportJSON: function () {
+                let rows = $(_private.var.globalCtx).find('.row')
+                let values = {}
+                for (let i = 0; i < rows.length; i++) {
+                    let select = $($(rows[i]).find('[type="sp_select"]').find('select')[0]).find('option:selected')
+                    let name = select.attr('name')
+                    let type = select.attr('s_type')
+                    let value = ''
+                    if (type.startsWith('select')) {
+                        value = $($(rows[i]).find('[type="sp_value"]').find('select')[0]).find('option:selected').attr('name')
+                    } else {
+                        value = $(rows[i]).find('[type="sp_value"]').find('input').val()
+                    }
+                    if (value === '') {
+                        continue
+                    }
+                    if (values[name] === undefined) {
+                        values[name] = []
+                    }
+                    if (!_private.methods.isExists(values[name], value)) {
+                        values[name].push(value)
+                    }
+                }
+
+                if (Object.entries(values).length === 0) {
+                    return undefined
+                }
+
+                return {values: values}
+            },
+            importJSON: function (json) {
+                _private.var.globalCtx.find('[type="sp_wrapper"]').html('')
+                for (const [name, value] of Object.entries(json.values)) {
+                    for (let i = 0; i < value.length; i++) {
+                        _private.methods.addRowWithParams(name, value[i])
+                    }
+                }
+            },
+            exportJsonStr: function () {
+                return JSON.stringify(_public.methods.exportJSON())
+            },
+            importJsonStr: function (str) {
+                _public.methods.importJSON(JSON.parse(str))
+            },
+            jsonStrEncode: function () {
+                let enc = CryptoJS.AES.encrypt(_public.methods.exportJsonStr(), _private.var.secretKey).toString().replace('/', '_sl_')
+                console.log('encoded: ', enc)
+                console.log('decoded: ', _public.methods.jsonStrDecode(enc))
+                return enc
+            },
+            jsonStrDecode: function (str) {
+                return CryptoJS.AES.decrypt(str.replace('_sl_', '/'), _private.var.secretKey).toString(CryptoJS.enc.Utf8)
             },
             jsonUnmarshal: function () {
-                // TODO: Парсит json строку и устанавливает параметры фильтров в соответствии с данными из json
+                // Парсит json строку и устанавливает параметры фильтров в соответствии с данными из json
             }
         }
     };
@@ -65,6 +115,39 @@
                 _private.var.rowsCount++
 
                 _private.methods.addPlus() // Добавили кнопку '+'
+            },
+            addRowWithParams: function (name, value) {
+                _private.methods.removePlus() // Удалили кнопку '+'
+
+                // Формируем новую строку
+                let row = $(_private.const.rowBaseTmpl)
+                _private.methods.addSelect(row) // Добавили select
+                row.find(`select option[name="${name}"]`).prop('selected', true) // Переключили select
+                _private.methods.addValue(row) // Добавили input
+
+                console.log(row.find('input'))
+
+                if (row.find('input').length !== 0) {
+                    row.find(('input')).val(value)
+                } else {
+                    row.find('[type="sp_value"]').find(`select option[name="${value}"]`).prop('selected', true)
+                }
+
+                _private.methods.addCross(row) // Добавили кнопку 'x'
+
+                // Поместили сформированную строку на страницу
+                _private.var.globalCtx.find('[type="sp_wrapper"]').append(row)
+                _private.var.rowsCount++
+
+                _private.methods.addPlus() // Добавили кнопку '+'
+            },
+            isExists: function (array, elem) {
+                for (let i = 0; i < array.length; i++) {
+                    if (array[i] === elem) {
+                        return true
+                    }
+                }
+                return false
             },
             addSelect: function (row) {
                 row.find('[type="sp_select"]').append(_private.methods.getSelect(row))
@@ -117,19 +200,11 @@
                 let select = $(`<select class="form-control"></select>`)
 
                 for (let i = 0; i < _private.var.globalSettings.selectOptions.length; i++) {
-                    let opt = $(`<option></option>`)
-                    opt.attr('name', _private.var.globalSettings.selectOptions[i].name)
-                    opt.attr('s_type', _private.var.globalSettings.selectOptions[i].type)
-                    opt.append(_private.var.globalSettings.selectOptions[i].tittle)
-                    select.append(opt)
+                    _private.methods.addParam(select, _private.var.globalSettings.selectOptions[i])
                 }
 
                 for (let i = 0; i < _private.var.globalSettings.customRowType.length; i++) {
-                    let opt = $(`<option></option>`)
-                    opt.attr('name', _private.var.globalSettings.customRowType[i].name)
-                    opt.attr('s_type', _private.var.globalSettings.customRowType[i].type)
-                    opt.append(_private.var.globalSettings.customRowType[i].tittle)
-                    select.append(opt)
+                    _private.methods.addParam(select, _private.var.globalSettings.customRowType[i])
                 }
 
                 select.on('change', function () {
@@ -137,6 +212,13 @@
                 })
 
                 return select
+            },
+            addParam: function (select, option) {
+                let opt = $(`<option></option>`)
+                opt.attr('name', option.name)
+                opt.attr('s_type', option.type)
+                opt.append(option.tittle)
+                select.append(opt)
             },
             initRowsMap: function () {
                 _private.var.rowsTypeMap = new Map()
@@ -161,7 +243,6 @@
                             select.append(opt)
                         })
                         _private.var.rowsTypeMap.set(c_rt[i].type, select[0].outerHTML)
-                        console.log('_private.var.rowsTypeMap', _private.var.rowsTypeMap)
                     } else {
                         _private.var.rowsTypeMap.set(c_rt[i].type, c_rt[i].code)
                     }
@@ -172,16 +253,11 @@
             globalCtx: undefined,
             globalSettings: undefined,
             rowsCount: 0,
-            rowsTypeMap: {}
+            rowsTypeMap: {},
+            secretKey: `5aee0674d9cb426c8f7737d4d24072f2`
         },
         const: {
-            rowBaseTmpl: `
-                <div class="row">
-                    <div class="col-lg-3 form-group" type="sp_select"></div>
-                    <div class="col-lg-7 form-group" type="sp_value"></div>
-                    <div class="col-lg-1 form-group" type="sp_cross"></div>
-                    <div class="col-lg-1 form-group" type="sp_plus"></div>
-                </div>`
+            rowBaseTmpl: '<div class="row"><div class="col-lg-3 form-group" type="sp_select"></div><div class="col-lg-7 form-group" type="sp_value"></div><div class="col-lg-1 form-group" type="sp_cross"></div><div class="col-lg-1 form-group" type="sp_plus"></div></div>'
         }
     }
 })(jQuery);

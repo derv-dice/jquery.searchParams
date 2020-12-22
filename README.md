@@ -6,12 +6,12 @@
 - bootstrap.grid
 
 ### Methods
-- `init`
-- `rowsCount`
-- `exportJSON`
-- `exportJsonStr`
-- `importJSON`
-- `importJsonStr`
+- [`init`](#init)
+- [`rowsCount`](#rowscount)
+- [`exportJSON`](#exportjson)
+- [`exportJsonStr`](#exportjsonstr)
+- [`importJSON`](#importjson)
+- [`importJsonStr`](#importjsonstr)
 
 ----
 ### init

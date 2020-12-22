@@ -6,12 +6,12 @@
 - bootstrap.grid
 
 ### Methods
-- `init`
-- `rowsCount`
-- `exportJSON`
-- `exportJsonStr`
-- `importJSON`
-- `importJsonStr`
+- [`init`](#init)
+- [`rowsCount`](#rowscount)
+- [`exportJSON`](#exportjson)
+- [`exportJsonStr`](#exportjsonstr)
+- [`importJSON`](#importjson)
+- [`importJsonStr`](#importjsonstr)
 
 ----
 ### init
@@ -35,6 +35,7 @@ Available `args`:
   - `params <array of {tittle, value}>` - only needed if value is **select** instead **input**
   - `code <string>` - html code of custom **input**. Example: `<input class="form-control" type="time">`
 - `plusDirection <top | bottom>` - direction of `+` button  
+
 Example:
 ```javascript
 $('#foo').searchParams('init', {
@@ -80,6 +81,7 @@ $('#foo').searchParams('init', {
 ```
 
 Returns:
+
 ![Init](images/1.png)
 
 ### rowsCount
@@ -99,6 +101,7 @@ arert($('#foo').searchParams('exportJSON'))
 ```
 
 Returns:
+
 ![Init](images/3.png)
 
 ### exportJsonStr
@@ -125,6 +128,7 @@ arert($('#foo').searchParams('importJSON', {"values":{"key_1":["Some text","Anot
 ```
 
 Returns:
+
 ![Init](images/2.png)
 
 ### importJsonStr

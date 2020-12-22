@@ -33,6 +33,7 @@
                 _private.var.globalSettings = options
 
                 _private.methods.initRowsMap()
+                _private.methods.initSingleNamesMap()
                 this.append('<div class="col-lg-12" type="sp_wrapper"></div>')
                 _private.methods.addRow(this, settings.selectOptions)
             },
@@ -76,6 +77,7 @@
                         _private.methods.addRowWithParams(name, value[i])
                     }
                 }
+                _private.var.rowsCount = _private.var.globalCtx.find('.row').length
             },
             exportJsonStr: function () {
                 return JSON.stringify(_public.methods.exportJSON())
@@ -83,18 +85,6 @@
             importJsonStr: function (str) {
                 _public.methods.importJSON(JSON.parse(str))
             },
-            jsonStrEncode: function () {
-                let enc = CryptoJS.AES.encrypt(_public.methods.exportJsonStr(), _private.var.secretKey).toString().replace('/', '_sl_')
-                console.log('encoded: ', enc)
-                console.log('decoded: ', _public.methods.jsonStrDecode(enc))
-                return enc
-            },
-            jsonStrDecode: function (str) {
-                return CryptoJS.AES.decrypt(str.replace('_sl_', '/'), _private.var.secretKey).toString(CryptoJS.enc.Utf8)
-            },
-            jsonUnmarshal: function () {
-                // Парсит json строку и устанавливает параметры фильтров в соответствии с данными из json
-            }
         }
     };
 
@@ -112,6 +102,7 @@
 
                 // Поместили сформированную строку на страницу
                 _private.var.globalCtx.find('[type="sp_wrapper"]').append(row)
+                _private.methods.toggleSingleAvailability()
                 _private.var.rowsCount++
 
                 _private.methods.addPlus() // Добавили кнопку '+'
@@ -124,8 +115,6 @@
                 _private.methods.addSelect(row) // Добавили select
                 row.find(`select option[name="${name}"]`).prop('selected', true) // Переключили select
                 _private.methods.addValue(row) // Добавили input
-
-                console.log(row.find('input'))
 
                 if (row.find('input').length !== 0) {
                     row.find(('input')).val(value)
@@ -209,9 +198,26 @@
 
                 select.on('change', function () {
                     _private.methods.changeValue(row, $(this))
+                    _private.methods.toggleSingleAvailability()
                 })
 
                 return select
+            },
+            toggleSingleAvailability: function () {
+                let opt = _private.var.globalCtx.find('[type="sp_select"]').find('option')
+                opt.removeAttr('disabled')
+                let selectedOpt = _private.var.globalCtx.find('[type="sp_select"]').find('option:selected')
+                opt.each(function (i) {
+                    let name = $(opt[i]).attr('name')
+                    if (_private.var.singleNames[name]) {
+                        for (let n = 0; n < selectedOpt.length; n++) {
+                            if ($(selectedOpt[n]).attr('name') === name) {
+                                let allUnique = _private.var.globalCtx.find('[type="sp_select"]').find(`option[name="${name}"]`)
+                                allUnique.attr('disabled', true)
+                            }
+                        }
+                    }
+                })
             },
             addParam: function (select, option) {
                 let opt = $(`<option></option>`)
@@ -247,6 +253,21 @@
                         _private.var.rowsTypeMap.set(c_rt[i].type, c_rt[i].code)
                     }
                 }
+            },
+            initSingleNamesMap: function () {
+                for (let i = 0; i < _private.var.globalSettings.selectOptions.length; i++) {
+                    let opt = _private.var.globalSettings.selectOptions[i]
+                    if (opt.isSingle === true) {
+                        _private.var.singleNames[opt.name] = true
+                    }
+                }
+
+                for (let i = 0; i < _private.var.globalSettings.customRowType.length; i++) {
+                    let opt = _private.var.globalSettings.customRowType[i]
+                    if (opt.isSingle === true) {
+                        _private.var.singleNames[opt.name] = true
+                    }
+                }
             }
         },
         var: {
@@ -254,6 +275,7 @@
             globalSettings: undefined,
             rowsCount: 0,
             rowsTypeMap: {},
+            singleNames: {},
             secretKey: `5aee0674d9cb426c8f7737d4d24072f2`
         },
         const: {

@@ -1,2 +1,2 @@
 # jquery.searchParams
-jQuery plugin for adding search parameters block to page
+jquery плагин для добавления списка параметров поиска на страницу

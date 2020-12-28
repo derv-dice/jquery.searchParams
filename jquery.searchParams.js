@@ -16,7 +16,9 @@
                 let settings = $.extend({
                     'plusDirection': 'top',
                     'selectOptions': [],
-                    'customRowType': []
+                    'customRowType': [],
+                    'plusBtnClass': '',
+                    'crossBtnClass': '',
                 }, options);
 
                 if (settings.selectOptions.length === 0) {
@@ -150,7 +152,14 @@
                 ))
             },
             addPlus: function () {
-                let btn = $(`<button class="btn btn-outline-success btn-block"><i class="fa fa-plus" aria-hidden="true"></i></button>`)
+                let btnClass
+                if (_private.var.globalSettings.plusBtnClass === '') {
+                    btnClass = 'btn btn-block btn-outline-success'
+                } else {
+                    btnClass = 'btn btn-block ' + _private.var.globalSettings.plusBtnClass
+                }
+
+                let btn = $(`<button class="${btnClass}"><i class="fa fa-plus" aria-hidden="true"></i></button>`)
                 btn.on('click', function () {
                     _private.methods.addRow()
                 })
@@ -165,7 +174,14 @@
                 _private.var.globalCtx.find('[type="sp_plus"]').find('button').remove()
             },
             addCross: function (row) {
-                let btn = $(`<button class="btn btn-outline-danger btn-block"><i class="fa fa-times" aria-hidden="true"></i></button>`)
+                let btnClass
+                if (_private.var.globalSettings.crossBtnClass === '') {
+                    btnClass = 'btn btn-block btn-outline-danger'
+                } else {
+                    btnClass = 'btn btn-block ' + _private.var.globalSettings.crossBtnClass
+                }
+
+                let btn = $(`<button class="${btnClass}"><i class="fa fa-times" aria-hidden="true"></i></button>`)
                 btn.on('click', function () {
                     _private.methods.removeRow(row)
                 })

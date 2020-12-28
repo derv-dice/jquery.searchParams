@@ -35,6 +35,8 @@ Available `args`:
   - `params <array of {tittle, value}>` - only needed if value is **select** instead **input**
   - `code <string>` - html code of custom **input**. Example: `<input class="form-control" type="time">`
 - `plusDirection <top | bottom>` - direction of `+` button  
+- `plusBtnClass <string>` - custom css class for the `+` button
+- `crossBtnClass <string>` - custom css class for the `+` button
 
 Example:
 ```javascript

@@ -1,6 +1,8 @@
 # jquery.searchParams
 > searchParams is jquery plugin, provides: adding div with custom search parameters
 
+> [Codepen (live demo)](https://codepen.io/dervDice/pen/OJbNMaj)
+
 ### Requirements
 - jquery
 - bootstrap.grid

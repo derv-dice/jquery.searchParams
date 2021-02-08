@@ -1,5 +1,5 @@
 # jquery.searchParams
-searchParams is jquery plugin, provides: adding div with custom search parameters. [Watch live demo](https://codepen.io/dervDice/pen/OJbNMaj)
+searchParams is jquery plugin, provides: adding div with custom search parameters. [Watch live demo](https://codepen.io/derv-dice/full/OJbNMaj)
 
 ### Requirements
 - jquery
